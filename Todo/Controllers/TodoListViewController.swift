@@ -11,6 +11,7 @@ import UIKit
 class TodoListViewController: UITableViewController {
     
     let defaults = UserDefaults.standard
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     var itemArrey = [Item]()
     var itemStringsArrey = ["Study Swift", "Read Scrum", "Watch Spider Man", "Kiss Zayka"]
 
@@ -21,13 +22,12 @@ class TodoListViewController: UITableViewController {
         for title in itemStringsArrey {
             let item = Item()
             item.title = title
-    
+
             itemArrey.append(item)
         }
         
-        if let list = defaults.array(forKey: "TodoListArrey") as? [Item] {
-            itemArrey = list
-        }
+        loadItems()
+        
     }
     
     //MARK: - Tableview Datasource Methods
@@ -56,6 +56,7 @@ class TodoListViewController: UITableViewController {
         tableView.reloadData()
         
         tableView.deselectRow(at: indexPath, animated: true)
+        saveItems()
     }
     
     //MARK: - Add New Items
@@ -73,8 +74,7 @@ class TodoListViewController: UITableViewController {
                 item.title = textField.text!
                 
                 self.itemArrey.append(item)
-                
-                self.defaults.set(self.itemArrey, forKey: "TodoListArrey")
+                self.saveItems()
                 
                 self.tableView.reloadData()
             }
@@ -90,6 +90,35 @@ class TodoListViewController: UITableViewController {
         
     }
     
+    //MARK: - Data manipulations methods
+    
+    func saveItems() {
+        
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(itemArrey)
+            try data.write(to:dataFilePath!)
+        } catch {
+            print("Error encoding item arrey, \(error)")
+        }
+        
+    }
+    
+    func loadItems() {
+        
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+            
+            do {
+                itemArrey = try decoder.decode([Item].self, from: data)
+            } catch {
+                print("Decoding item arrey error, \(error)")
+            }
+        }
+        
+        tableView.reloadData()
+    }
     
 }
 
