@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		51395C1021FB356800F400FF /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 51395C0E21FB356800F400FF /* DataModel.xcdatamodeld */; };
+		51B79998220C8E0200E3C69C /* CategoriesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51B79997220C8E0200E3C69C /* CategoriesTableViewController.swift */; };
 		51D44CEF21D28CA3004F453E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51D44CEE21D28CA3004F453E /* AppDelegate.swift */; };
 		51D44CF121D28CA3004F453E /* TodoListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51D44CF021D28CA3004F453E /* TodoListViewController.swift */; };
 		51D44CF421D28CA3004F453E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 51D44CF221D28CA3004F453E /* Main.storyboard */; };
@@ -17,6 +18,7 @@
 
 /* Begin PBXFileReference section */
 		51395C0F21FB356800F400FF /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
+		51B79997220C8E0200E3C69C /* CategoriesTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesTableViewController.swift; sourceTree = "<group>"; };
 		51D44CEB21D28CA3004F453E /* Todo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		51D44CEE21D28CA3004F453E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		51D44CF021D28CA3004F453E /* TodoListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoListViewController.swift; sourceTree = "<group>"; };
@@ -85,6 +87,7 @@
 		51D44D0221D2AD84004F453E /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				51B79997220C8E0200E3C69C /* CategoriesTableViewController.swift */,
 				51D44CF021D28CA3004F453E /* TodoListViewController.swift */,
 			);
 			path = Controllers;
@@ -173,6 +176,7 @@
 				51D44CF121D28CA3004F453E /* TodoListViewController.swift in Sources */,
 				51395C1021FB356800F400FF /* DataModel.xcdatamodeld in Sources */,
 				51D44CEF21D28CA3004F453E /* AppDelegate.swift in Sources */,
+				51B79998220C8E0200E3C69C /* CategoriesTableViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
