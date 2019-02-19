@@ -7,18 +7,18 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 class CategoriesTableViewController: UITableViewController {
 
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    let realm = try! Realm()
     
-    var categoriesArray = [Category]()
+    var categories: Results<Category>?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        loadCategories()
+       // loadCategories()
     }
     
     //MARK: - Add New Categories
@@ -31,13 +31,10 @@ class CategoriesTableViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Category", style: .default) { (action) in
             if (textField.text?.count)! > 0 {
                 
-                let category = Category(context: self.context)
-                category.name = textField.text!
+                let newCategory = Category()
+                newCategory.name = textField.text!
                 
-                self.categoriesArray.append(category)
-                self.saveCategories()
-                
-                self.tableView.reloadData()
+                self.save(category: newCategory)
                 
             }
         }
@@ -53,39 +50,36 @@ class CategoriesTableViewController: UITableViewController {
 
     //MARK: - Data manipulations methods
     
-    func saveCategories() {
+    func save(category: Category) {
         
         do {
-            try context.save()
+            try realm.write {
+                realm.add(category)
+            }
         } catch {
-            print("Error encoding item arrey, \(error)")
+            print("Error saving category, \(error)")
         }
         
         tableView.reloadData()
     }
     
-    func loadCategories(with request: NSFetchRequest<Category> = Category.fetchRequest()) {
+    func loadCategories() {
         
-        do {
-            categoriesArray = try context.fetch(request)
-        } catch {
-            print("Error fetching categories: \(error)")
-        }
+        categories = realm.objects(Category.self)
+        
         tableView.reloadData()
     }
 
     //MARK: - Tableview Datasource Methods
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categoriesArray.count
+        return categories?.count ?? 1
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
         
-        let category = categoriesArray[indexPath.row]
-        
-        cell.textLabel?.text = category.name
+        cell.textLabel?.text = categories?[indexPath.row].name ?? "There is no Catigories yet"
         
         return cell
     }
@@ -100,16 +94,24 @@ class CategoriesTableViewController: UITableViewController {
         return true
     }
     
+    
+    //TODO: delete style
+    
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if (editingStyle == .delete) {
-            
-            context.delete(categoriesArray[indexPath.row])
-            categoriesArray.remove(at: indexPath.row)
-            
-            saveCategories()
+
+            if let selectedCategory = categories?[indexPath.row] {
+                do {
+                    try realm.write {
+                        realm.delete(selectedCategory)
+                    }
+                    tableView.reloadData()
+                } catch {
+                    print("Error deleting category: \(error)")
+                }
+            }
         }
     }
-    
     
     // MARK: - Navigation
 
@@ -117,7 +119,7 @@ class CategoriesTableViewController: UITableViewController {
         let destinationVC = segue.destination as! TodoListViewController
         
         if let indexPath = tableView.indexPathForSelectedRow {
-            destinationVC.selectedCategory = categoriesArray[indexPath.row]
+            destinationVC.selectedCategory = categories?[indexPath.row]
         } else {
             print("Failed to set selectedCategory property!")
         }
