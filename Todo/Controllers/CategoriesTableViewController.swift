@@ -8,8 +8,10 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
-class CategoriesTableViewController: UITableViewController {
+
+class CategoriesTableViewController: SwipeTableViewController {
 
     let realm = try! Realm()
     
@@ -18,7 +20,7 @@ class CategoriesTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-       // loadCategories()
+        loadCategories()
     }
     
     //MARK: - Add New Categories
@@ -33,7 +35,8 @@ class CategoriesTableViewController: UITableViewController {
                 
                 let newCategory = Category()
                 newCategory.name = textField.text!
-                
+                let color = self.generateNewColor()
+                newCategory.hexColor = color
                 self.save(category: newCategory)
                 
             }
@@ -69,6 +72,32 @@ class CategoriesTableViewController: UITableViewController {
         
         tableView.reloadData()
     }
+    
+    override func update(at indexPath: IndexPath) {
+        if let selectedCategory = categories?[indexPath.row] {
+            do {
+                try realm.write {
+                    realm.delete(selectedCategory)
+                }
+            } catch {
+                print("Error deleting category: \(error)")
+            }
+        }
+    }
+    
+    override func changeColor(at indexPath: IndexPath) {
+        if let selectedCategory = categories?[indexPath.row] {
+            do {
+                try realm.write {
+                    selectedCategory.hexColor = generateNewColor()
+                }
+            } catch {
+                print("Error changing color: \(error)")
+            }
+            tableView.reloadData()
+        }
+    }
+
 
     //MARK: - Tableview Datasource Methods
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -77,10 +106,17 @@ class CategoriesTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
-        cell.textLabel?.text = categories?[indexPath.row].name ?? "There is no Catigories yet"
-        
+        if let category = categories?[indexPath.row] {
+            cell.textLabel?.text = category.name
+            if let color = UIColor.init(hexString: category.hexColor) {
+                cell.tintColor = ContrastColorOf(color, returnFlat: true)
+                cell.backgroundColor = UIColor.init(hexString: category.hexColor)
+            }
+        } else {
+            cell.textLabel?.text = "There is no Catigories yet"
+        }
         return cell
     }
     
@@ -88,29 +124,6 @@ class CategoriesTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         performSegue(withIdentifier: "showItems", sender: self)
-    }
-    
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return true
-    }
-    
-    
-    //TODO: delete style
-    
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if (editingStyle == .delete) {
-
-            if let selectedCategory = categories?[indexPath.row] {
-                do {
-                    try realm.write {
-                        realm.delete(selectedCategory)
-                    }
-                    tableView.reloadData()
-                } catch {
-                    print("Error deleting category: \(error)")
-                }
-            }
-        }
     }
     
     // MARK: - Navigation
@@ -123,6 +136,15 @@ class CategoriesTableViewController: UITableViewController {
         } else {
             print("Failed to set selectedCategory property!")
         }
+    }
+    
+    //MARK: - Generates new Chameleon hexColor
+    func generateNewColor() -> String {
+        
+        let newColor = UIColor.init(randomColorIn: [FlatRed(), FlatWhite(), FlatOrange(), FlatYellow(), FlatSand(), FlatMagenta(), FlatSkyBlue(), FlatGreen(), FlatMint(), FlatGray(), FlatPurple(), FlatWatermelon(), FlatLime(), FlatPink(), FlatCoffee(), FlatPowderBlue()])
+          //  UIColor.init(randomFlatColorExcludingColorsIn: [FlatBlack(), FlatNavyBlue(), FlatBrown(), FlatPlum(), FlatTeal(), FlatBlue()])
+        return newColor?.hexValue() ?? ""
+        
     }
 
 

@@ -7,11 +7,13 @@
 //
 
 import UIKit
-import CoreData
 import RealmSwift
+import ChameleonFramework
 
-class TodoListViewController: UITableViewController {
+class TodoListViewController: SwipeTableViewController {
 
+    @IBOutlet weak var searchBar: UISearchBar!
+    
     let realm = try! Realm()
     
     var todoItems: Results<Item>?
@@ -27,6 +29,30 @@ class TodoListViewController: UITableViewController {
         
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        
+        if let hexColor = selectedCategory?.hexColor {
+            
+            title = selectedCategory!.name
+            updateNavBar(withHexCode: hexColor)
+        }
+    }
+    
+    override func willMove(toParent parent: UIViewController?) {
+        updateNavBar(withHexCode: "80DCFC")
+    }
+    
+    //MARK: - Update Novigation Bar
+    func updateNavBar(withHexCode hexColor: String) {
+        guard let navBar = navigationController?.navigationBar else {fatalError("NavigationController does not exist!")}
+        guard let color = UIColor.init(hexString: hexColor) else {fatalError()}
+        
+        navBar.barTintColor = color
+        navBar.tintColor = ContrastColorOf(color, returnFlat: true)
+        navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : ContrastColorOf(color, returnFlat: true)]
+        searchBar.barTintColor = color
+    }
+    
     //MARK: - Tableview Datasource Methods
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -35,11 +61,18 @@ class TodoListViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         if let item = todoItems?[indexPath.row] {
             cell.textLabel?.text = item.name
             cell.accessoryType = item.done ? .checkmark : .none
+            
+            if let color = UIColor.init(hexString: selectedCategory!.hexColor)?.darken(byPercentage: 0.5 * CGFloat(indexPath.row) / CGFloat(todoItems!.count)) {
+                
+                cell.backgroundColor = color
+                cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
+            }
+            
         } else {
             cell.textLabel?.text = "No Items Added"
         }
@@ -63,27 +96,6 @@ class TodoListViewController: UITableViewController {
         }
         tableView.reloadData()
         tableView.deselectRow(at: indexPath, animated: true)
-    }
-    
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return true
-    }
-    
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if (editingStyle == .delete) {
-            
-            if let item = todoItems?[indexPath.row] {
-                
-                do {
-                    try realm.write {
-                        realm.delete(item)
-                    }
-                } catch {
-                    print("Error deleting item \(error)")
-                }
-            }
-        }
-        tableView.reloadData()
     }
     
     //MARK: - Add New Items
@@ -133,6 +145,18 @@ class TodoListViewController: UITableViewController {
         tableView.reloadData()
       }
     
+    override func update(at indexPath: IndexPath) {
+        if let item = todoItems?[indexPath.row] {
+            
+            do {
+                try realm.write {
+                    realm.delete(item)
+                }
+            } catch {
+                print("Error deleting item \(error)")
+            }
+        }
+    }
 }
 
 //MARK: - Search bar methods
